@@ -19,7 +19,7 @@ using std::endl;
 
 // generic code to do one iteration of finite difference method
 // Jacobi Method
-double iterateJ(vector<vector<double>> &V, double deltaV){
+double iterateJ(vector<vector<double>> &V){
   auto Vtmp = V;
   double dVmax=1e-50;
   int nx=V.size();
@@ -29,7 +29,7 @@ double iterateJ(vector<vector<double>> &V, double deltaV){
       double Vnew = 0.25*(Vtmp[i+1][j]+Vtmp[i-1][j]+Vtmp[i][j+1]+Vtmp[i][j-1]);
       double dV=fabs(Vnew-V[i][j]);
       dVmax=std::max(dVmax,dV);    // keep track of max change in this sweep
-      if(V[i][j] != deltaV/2.0) V[i][j] = Vnew;
+      V[i][j] = Vnew;
     }
   }
   return dVmax;
@@ -75,22 +75,21 @@ void fillGraph(TGraph2D* tg, const vector<vector<double>> &V, double delta, TBox
 // maxIter: max iterations in case of non-converence
 // Npts : smoothness parameter, number of grid points in x,y
 // pass a tcanvas for an animated solution, with specified max rate of frames/second
-TGraph2D* LaplaceLine(int maxIter=100, double eps=0.001, int Npts=100, TCanvas *tc=0, int rate=10, double deltaV=200.0, double spacing=20.0, double width=40.0)
-{
+TGraph2D* LaplaceLine(int maxIter=100, double eps=0.001, int Npts=100, TCanvas *tc=0, int rate=10){
   double L=100;            // length of any side
+  double Vtop=100;         // Voltage at top of box
   int maxgraphlines=200;   // max lines to draw in each direction
   
   vector<vector<double>> V(Npts, vector<double> (Npts, 0));  // create N x N vector, init to 0
   double delta = L/(Npts-1);                                 // grid spacing
+  int plateTop = Npts/3*2;
+  int plateBot = Npts/3;
+  for (int i=0; i<Npts; i++) {
+    V[i][plateTop] = Vtop;            // set voltage at wire
+    V[i][plateBot] = -Vtop;
+  }
   int msec = 1000/rate;                                      // milliseconds sleep between frames
-  TBox *plotRange = new TBox(0,0.45*L,1.1*L,1.1*L);
-
-  //create capacitor plates
-  for(int i = (int)L/(2*delta)-(int)width/(2*delta); i <= (int)L/(2*delta)-(int)width/(2*delta); i++)
-    {
-      V[(int)L/(2*delta)+(int)spacing/(2*delta)][i] = deltaV/2.0;
-      V[(int)L/(2*delta)-(int)spacing/(2*delta)][i] = -deltaV/2.0;
-    }
+  TBox *plotRange = new TBox(0,0,1.1*L,1.1*L);
 
   TGraph2D* tgV = new TGraph2D();                            // graph to store result
   if (Npts<50) tgV->SetLineWidth(3);                         
@@ -101,8 +100,12 @@ TGraph2D* LaplaceLine(int maxIter=100, double eps=0.001, int Npts=100, TCanvas *
   double dV;
   int niter=0;
   do{
-    dV=iterateJ(V, deltaV);   // iterate using Jacobi method
+    dV=iterateJ(V);   // iterate using Jacobi method
     //dV=iterateGS(V);   // iterate using Gauss-Seidel method
+    for (int i=0; i<Npts; i++) {
+      V[i][plateTop] = Vtop;
+      V[i][plateBot] = -Vtop;
+    }
     ++niter;
     if (tc) {
       tc->cd();
@@ -175,7 +178,7 @@ int main(int argc, char *argv[]){
   
   TImage* img = TImage::Create();
   img->FromPad(tc);
-  img->WriteImage("part1.png");
+  img->WriteImage("LaplaceLine1.png");
 
   cout << "Press ^c to exit" << endl;
   theApp.SetIdleTimer(30,".q");  // set up a failsafe timer to end the program  
