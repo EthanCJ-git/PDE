@@ -92,11 +92,13 @@ TGraph2D* LaplaceLine(int maxIter=100, double eps=0.001, int Npts=100, TCanvas *
   int plateBot = Npts/3;
   int plateLef = Npts/6;
   int plateRig = Npts/6*5;
+  int width = Npts/12;
   double rho = 0.25;
-  for (int i=plateLef; i<=plateRig; i++) {
-    V[i][plateTop] = Vtop;            // set voltage at wire
-    V[i][plateBot] = -Vtop;
-  }
+  for (int i=plateLef; i<=plateRig; i++)
+    for( int j=0; j<=width; j++) {
+      V[i][plateTop+j] = Vtop;            // set voltage at wire
+      V[i][plateBot-j] = -Vtop;
+    }
   int msec = 1000/rate;                                      // milliseconds sleep between frames
   TBox *plotRange = new TBox(0,0,1.1*L,1.1*L);
 
@@ -111,10 +113,11 @@ TGraph2D* LaplaceLine(int maxIter=100, double eps=0.001, int Npts=100, TCanvas *
   do{
     dV=iterateJ(V, rho, delta, plateTop, plateBot, plateLef, plateRig);   // iterate using Jacobi method
     //dV=iterateGS(V);   // iterate using Gauss-Seidel method
-    for (int i=plateLef; i<=plateRig; i++) {
-      V[i][plateTop] = Vtop;
-      V[i][plateBot] = -Vtop;
-    }
+    for (int i=plateLef; i<=plateRig; i++)
+      for (int j=0; j<=width; j++) {
+	V[i][plateTop+j] = Vtop;
+	V[i][plateBot-j] = -Vtop;
+      }
     ++niter;
     if (tc) {
       tc->cd();
@@ -187,7 +190,7 @@ int main(int argc, char *argv[]){
   
   TImage* img = TImage::Create();
   img->FromPad(tc);
-  img->WriteImage("LaplaceLine2.png");
+  img->WriteImage("LaplaceLine3.png");
 
   cout << "Press ^c to exit" << endl;
   theApp.SetIdleTimer(30,".q");  // set up a failsafe timer to end the program  
