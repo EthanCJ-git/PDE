@@ -20,7 +20,7 @@ GSLFLAGS    = -I${EBROOTGSL}/include/gsl  -I/usr/include/gsl -lgsl -lgslcblas
 
 
 
-all: LaplaceLine part1 LaplaceLine1 LaplaceLine2 LaplaceLine3
+all: LaplaceLine part1 LaplaceLine1 LaplaceLine2 LaplaceLine3 LaplaceLine4Tri LaplaceLine4Sin
 
 
 LaplaceLine: LaplaceLine.C
@@ -40,6 +40,12 @@ LaplaceLine2: LaplaceLine2.C
 
 LaplaceLine3: LaplaceLine3.C
 	g++ -g -Wall -o LaplaceLine3 LaplaceLine3.C $(ROOTFLAGS) $(GSLFLAGS)
+
+LaplaceLine4Tri: LaplaceLine4Tri.C
+	g++ -g -Wall -o LaplaceLine4Tri LaplaceLine4Tri.C $(ROOTFLAGS) $(GSLFLAGS)
+
+LaplaceLine4Sin: LaplaceLine4Sin.C
+	g++ -g -Wall -o LaplaceLine4Sin LaplaceLine4Sin.C $(ROOTFLAGS) $(GSLFLAGS)
 
 clean:
 	rm -f LaplaceLine part1 part2 LaplaceLine1 LaplaceLine2 LaplaceLine3 *.o *.so *.pcm *.d *~
