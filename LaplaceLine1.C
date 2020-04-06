@@ -84,7 +84,9 @@ TGraph2D* LaplaceLine(int maxIter=100, double eps=0.001, int Npts=100, TCanvas *
   double delta = L/(Npts-1);                                 // grid spacing
   int plateTop = Npts/3*2;
   int plateBot = Npts/3;
-  for (int i=0; i<Npts; i++) {
+  int plateLef = Npts/6;
+  int plateRig = Npts/6*5;
+  for (int i=plateLef; i<=plateRig; i++) {
     V[i][plateTop] = Vtop;            // set voltage at wire
     V[i][plateBot] = -Vtop;
   }
@@ -102,7 +104,7 @@ TGraph2D* LaplaceLine(int maxIter=100, double eps=0.001, int Npts=100, TCanvas *
   do{
     dV=iterateJ(V);   // iterate using Jacobi method
     //dV=iterateGS(V);   // iterate using Gauss-Seidel method
-    for (int i=0; i<Npts; i++) {
+    for (int i=plateLef; i<=plateRig; i++) {
       V[i][plateTop] = Vtop;
       V[i][plateBot] = -Vtop;
     }

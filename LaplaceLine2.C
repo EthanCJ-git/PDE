@@ -22,7 +22,7 @@ using std::endl;
 
 // generic code to do one iteration of finite difference method
 // Jacobi Method
-double iterateJ(vector<vector<double>> &V, const double &rho, const double &delta, const int &plateTop, const int &plateBot){
+double iterateJ(vector<vector<double>> &V, const double &rho, const double &delta, const int &plateTop, const int &plateBot, const int &plateLef, const int &plateRig){
   auto Vtmp = V;
   double dVmax=1e-50;
   int nx=V.size();
@@ -31,7 +31,7 @@ double iterateJ(vector<vector<double>> &V, const double &rho, const double &delt
   for (int i=1; i<nx-1; i++){
     for (int j=1; j<ny-1; j++){
       double Vnew = 0.25*(Vtmp[i+1][j]+Vtmp[i-1][j]+Vtmp[i][j+1]+Vtmp[i][j-1]);
-      if(plateBot < j && j < plateTop)
+      if(plateLef <= i && i <= plateRig && plateBot < j && j < plateTop)
 	Vnew += M_PI*(rho-drho*(plateTop-j))*pow(delta,2);
       double dV=fabs(Vnew-V[i][j]);
       dVmax=std::max(dVmax,dV);    // keep track of max change in this sweep
@@ -90,8 +90,10 @@ TGraph2D* LaplaceLine(int maxIter=100, double eps=0.001, int Npts=100, TCanvas *
   double delta = L/(Npts-1);                                 // grid spacing
   int plateTop = Npts/3*2;
   int plateBot = Npts/3;
+  int plateLef = Npts/6;
+  int plateRig = Npts/6*5;
   double rho = 0.5;
-  for (int i=0; i<Npts; i++) {
+  for (int i=plateLef; i<=plateRig; i++) {
     V[i][plateTop] = Vtop;            // set voltage at wire
     V[i][plateBot] = -Vtop;
   }
@@ -107,9 +109,9 @@ TGraph2D* LaplaceLine(int maxIter=100, double eps=0.001, int Npts=100, TCanvas *
   double dV;
   int niter=0;
   do{
-    dV=iterateJ(V, rho, delta, plateTop, plateBot);   // iterate using Jacobi method
+    dV=iterateJ(V, rho, delta, plateTop, plateBot, plateLef, plateRig);   // iterate using Jacobi method
     //dV=iterateGS(V);   // iterate using Gauss-Seidel method
-    for (int i=0; i<Npts; i++) {
+    for (int i=plateLef; i<=plateRig; i++) {
       V[i][plateTop] = Vtop;
       V[i][plateBot] = -Vtop;
     }
